@@ -63,6 +63,30 @@ tasks.assemble {
     dependsOn(packageNpmApp)
 }
 
+val testsExecutedMarkerName: String = "${projectDir}/.tests.executed"
+
+val test by tasks.registering(NpmTask::class) {
+    dependsOn("assemble")
+
+    setEnvironment(mapOf("CI" to "true"))
+    args = listOf("run", "test")
+
+    inputs.files(fileTree("src"))
+    inputs.file("package.json")
+    inputs.file("package-lock.json")
+
+    doLast {
+        File(testsExecutedMarkerName).appendText("delete this file to force re-evaluation of the web tests")
+    }
+
+    outputs.file(testsExecutedMarkerName)
+}
+
+tasks.check {
+    dependsOn(test)
+}
+
 tasks.clean {
     delete(packageNpmApp.get().archivePath)
+    delete(testsExecutedMarkerName)
 }
