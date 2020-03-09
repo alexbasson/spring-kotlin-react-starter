@@ -38,6 +38,31 @@ tasks.named<NpmTask>("npm_run_build") {
     outputs.dir("build")
 }
 
-tasks.assemble {
+val packageNpmApp by tasks.registering(Jar::class) {
     dependsOn("npm_run_build")
+    baseName = "web"
+    extension = "jar"
+    destinationDir = file("${projectDir}/build_packageNpmApp")
+    from("build") {
+        into("static")
+    }
+}
+
+val npmResources by configurations.creating
+
+configurations.named("default").get().extendsFrom(npmResources)
+
+artifacts {
+    add(npmResources.name, packageNpmApp.get().archivePath) {
+        builtBy(packageNpmApp)
+        type = "jar"
+    }
+}
+
+tasks.assemble {
+    dependsOn(packageNpmApp)
+}
+
+tasks.clean {
+    delete(packageNpmApp.get().archivePath)
 }

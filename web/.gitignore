@@ -11,6 +11,7 @@
 # production
 /build
 .gradle/
+build_packageNpmApp/
 
 # misc
 .DS_Store
